@@ -1,0 +1,175 @@
+<div class="room-detail-panel">
+
+  <!-- Header -->
+  <div class="detail-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <span class="text-2xl">📊</span>
+      </div>
+      <div class="header-info">
+        <h2 class="detail-title">{{ room.name }} Details</h2>
+        <p class="room-id">ID: {{ room.id }}</p>
+      </div>
+    </div>
+
+    <button 
+      (click)="onClose()"
+      class="close-btn">
+      <span class="text-lg font-bold">✕</span>
+    </button>
+  </div>
+
+  <!-- Key Metrics Grid -->
+  <div class="metrics-grid">
+
+    <div class="metric-card" 
+         [class.metric-card--warning]="room.quotaRemaining < 20">
+      <div class="metric-content">
+        <div class="metric-icon metric-icon--blue">
+          <span class="text-3xl">📞</span>
+        </div>
+        <div class="metric-info">
+          <p class="metric-label">API Calls</p>
+          <p class="metric-value">{{ room.apiCalls | number }}</p>
+          <p class="metric-sublabel">Total requests</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card" 
+         [class.metric-card--critical]="room.quotaRemaining === 0"
+         [class.metric-card--warning]="room.quotaRemaining > 0 && room.quotaRemaining <= 20">
+      <div class="metric-content">
+        <div class="metric-icon"
+             [class.metric-icon--red]="room.quotaRemaining === 0"
+             [class.metric-icon--yellow]="room.quotaRemaining > 0 && room.quotaRemaining <= 20"
+             [class.metric-icon--green]="room.quotaRemaining > 20">
+          <span class="text-3xl">📈</span>
+        </div>
+        <div class="metric-info">
+          <p class="metric-label">Quota Remaining</p>
+          <p class="metric-value" 
+             [class.text-red-600]="room.quotaRemaining === 0"
+             [class.text-yellow-600]="room.quotaRemaining > 0 && room.quotaRemaining <= 20"
+             [class.text-green-600]="room.quotaRemaining > 20">
+            {{ room.quotaRemaining }}%
+          </p>
+          <p class="metric-sublabel">Available capacity</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-content">
+        <div class="metric-icon metric-icon--purple">
+          <span class="text-3xl">🕒</span>
+        </div>
+        <div class="metric-info">
+          <p class="metric-label">Last Login</p>
+          <p class="metric-value-small">{{ formatLastLogin(room.lastLogin) }}</p>
+          <p class="metric-sublabel">Recent activity</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-content">
+        <div class="metric-icon metric-icon--indigo">
+          <span class="text-3xl">📊</span>
+        </div>
+        <div class="metric-info">
+          <p class="metric-label">7-Day Total</p>
+          <p class="metric-value">{{ totalDailyUsage() }}</p>
+          <p class="metric-sublabel">Weekly usage</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Daily Usage Chart -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-header-icon">
+        <span class="text-xl text-white">📈</span>
+      </div>
+      <div class="chart-header-content">
+        <h3 class="chart-title">Daily Usage Trend</h3>
+        <p class="chart-subtitle">Last 7 days performance analysis</p>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <app-chart
+        [data]="dailyUsageChartData()"
+        [options]="lineChartOptions"
+        type="line">
+      </app-chart>
+    </div>
+
+    <div class="chart-footer">
+      <p class="chart-description">
+        Interactive trend visualization showing daily API usage patterns
+      </p>
+    </div>
+  </div>
+
+  <!-- Analytics Grid -->
+  <div class="analytics-grid">
+
+    <!-- Usage Analytics -->
+    <div class="analytics-card analytics-card--blue">
+      <div class="analytics-header">
+        <span class="text-2xl">📊</span>
+        <h3 class="analytics-title">Usage Analytics</h3>
+      </div>
+
+      <div class="analytics-content">
+        <div class="analytics-item">
+          <span class="analytics-label">Peak Day:</span>
+          <span class="analytics-value analytics-value--primary">Day {{ peakDay() }} ({{ peakUsage() }})</span>
+        </div>
+
+        <div class="analytics-item">
+          <span class="analytics-label">Average Daily:</span>
+          <span class="analytics-value analytics-value--blue">{{ averageDailyUsage() }}</span>
+        </div>
+
+        <div class="analytics-item">
+          <span class="analytics-label">Trend:</span>
+          <span class="analytics-value" [class]="getTrendClass()">{{ getTrend() }}</span>
+        </div>
+
+        <div class="analytics-item">
+          <span class="analytics-label">Consistency:</span>
+          <span class="analytics-value analytics-value--purple">{{ getConsistencyScore() }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Information -->
+    <div class="analytics-card analytics-card--gray">
+      <div class="analytics-header">
+        <span class="text-2xl">🎯</span>
+        <h3 class="analytics-title">Room Status</h3>
+      </div>
+
+      <div class="analytics-content">
+        <div class="status-indicator-section" [class]="getStatusBgClass()">
+          <div class="status-dot" [class]="getStatusDotClass()"></div>
+          <div class="status-info">
+            <p class="status-text" [class]="getStatusTextClass()">{{ getStatusText() }}</p>
+            <p class="status-description">{{ getStatusDescription() }}</p>
+          </div>
+        </div>
+
+        <!-- Status Recommendations -->
+        <div class="recommendations" [class]="getRecommendationBorderClass()">
+          <h4 class="recommendations-title">💡 Recommendations</h4>
+          <p class="recommendations-text">{{ getRecommendations() }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

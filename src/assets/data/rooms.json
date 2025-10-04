@@ -1,0 +1,34 @@
+[
+  {
+    "id": "room-1",
+    "name": "Room A",
+    "apiCalls": 1200,
+    "quotaRemaining": 65,
+    "lastLogin": "2025-09-20",
+    "dailyUsage": [
+      12,
+      15,
+      8,
+      20,
+      10,
+      18,
+      14
+    ]
+  },
+  {
+    "id": "room-2",
+    "name": "Room B",
+    "apiCalls": 950,
+    "quotaRemaining": 10,
+    "lastLogin": "2025-09-22",
+    "dailyUsage": [
+      20,
+      22,
+      19,
+      25,
+      28,
+      26,
+      30
+    ]
+  }
+]

@@ -1,0 +1,145 @@
+<div class="max-w-7xl mx-auto space-y-8">
+  <!-- Loading Overlay -->
+  <div *ngIf="roomService.loading$()" 
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-sm mx-4 text-center animate-pulse-slow">
+      <div class="w-16 h-16 mx-auto mb-4">
+        <div class="w-full h-full border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+      </div>
+      <p class="text-gray-700 font-medium text-lg">Loading room data...</p>
+      <p class="text-gray-500 text-sm mt-2">Please wait while we fetch the latest metrics</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="roomService.error$()" 
+       class="card p-8 border-l-4 border-red-500 bg-red-50 animate-slide-up">
+    <div class="flex items-center space-x-4">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <span class="text-2xl">❌</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-red-800">Error Loading Data</h3>
+        <p class="text-red-700 mt-1">{{ roomService.error$() }}</p>
+        <button 
+          (click)="retryLoad()" 
+          class="mt-4 btn-danger">
+          🔄 Retry Loading
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div *ngIf="!roomService.loading$() && !roomService.error$()" class="space-y-6">
+
+    <!-- Compact Room Filter Dropdown -->
+    <app-room-filter 
+      [rooms]="roomService.rooms$()" 
+      (filtersChanged)="onFiltersChanged($event)"
+      class="block animate-fade-in">
+    </app-room-filter>
+
+    <!-- Summary Stats with Animated Counters -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+      <div class="metric-card group">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-2xl">🏢</span>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Total Rooms</p>
+            <p class="text-3xl font-bold text-gray-900" #totalRoomsCounter>{{ filteredRooms().length }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card group">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-2xl">📞</span>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Total API Calls</p>
+            <p class="text-3xl font-bold text-gray-900" #totalApiCallsCounter>{{ totalApiCalls() | number }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card group">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-2xl">📊</span>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Avg Quota Remaining</p>
+            <p class="text-3xl font-bold text-gray-900" #avgQuotaCounter>{{ averageQuotaRemaining() }}%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card group">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-2xl">⚡</span>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm font-medium">Active Rooms</p>
+            <p class="text-3xl font-bold text-gray-900" #activeRoomsCounter>{{ activeRooms() }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
+      <!-- API Calls Bar Chart -->
+      <div class="card card-hover p-6">
+        <div class="flex items-center space-x-2 mb-6">
+          <span class="text-2xl">📊</span>
+          <h3 class="text-xl font-bold text-gray-900">API Calls per Room</h3>
+        </div>
+        <div class="h-80 relative">
+          <app-chart
+            [data]="apiCallsChartData()"
+            [options]="barChartOptions"
+            type="bar"
+            (chartClick)="onChartClick($event)">
+          </app-chart>
+        </div>
+        <p class="text-sm text-gray-500 mt-4 text-center">
+          Click on any bar to view detailed room analytics
+        </p>
+      </div>
+
+      <!-- Quota Usage Pie Chart -->
+      <div class="card card-hover p-6">
+        <div class="flex items-center space-x-2 mb-6">
+          <span class="text-2xl">🥧</span>
+          <h3 class="text-xl font-bold text-gray-900">Quota Usage Distribution</h3>
+        </div>
+        <div class="h-80 relative">
+          <app-chart
+            [data]="quotaUsageChartData()"
+            [options]="pieChartOptions"
+            type="pie"
+            (chartClick)="onChartClick($event)">
+          </app-chart>
+        </div>
+        <p class="text-sm text-gray-500 mt-4 text-center">
+          Interactive pie chart showing quota consumption patterns
+        </p>
+      </div>
+    </div>
+
+    <!-- Room Detail Panel -->
+    <app-room-detail 
+      *ngIf="selectedRoom()" 
+      [room]="selectedRoom()!"
+      (close)="closeDetail()"
+      class="block animate-slide-up">
+    </app-room-detail>
+  </div>
+</div>

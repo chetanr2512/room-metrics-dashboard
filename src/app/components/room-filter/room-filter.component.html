@@ -1,0 +1,162 @@
+<div class="filter-container">
+  <!-- Header -->
+  <div class="filter-header">
+    <div class="flex items-center space-x-3">
+      <div class="filter-icon">
+        <span class="text-xl">🔍</span>
+      </div>
+      <div>
+        <h3 class="filter-title">Room Filters</h3>
+        <p class="filter-subtitle">Select specific rooms to analyze their metrics</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiselect Dropdown -->
+  <div class="dropdown-container">
+    <div class="dropdown-wrapper">
+
+      <!-- Dropdown Trigger Button -->
+      <button 
+        (click)="toggleDropdown()"
+        class="dropdown-trigger"
+        [class.dropdown-trigger--open]="isDropdownOpen()"
+        type="button">
+
+        <div class="dropdown-trigger-content">
+          <span class="dropdown-icon">🏢</span>
+          <span class="dropdown-text">{{ getDropdownDisplayText() }}</span>
+          <div class="dropdown-counter" *ngIf="getSelectedCount() > 0 && getSelectedCount() < rooms.length">
+            {{ getSelectedCount() }}
+          </div>
+        </div>
+
+        <!-- Dropdown Arrow -->
+        <svg 
+          class="dropdown-arrow" 
+          [class.dropdown-arrow--rotated]="isDropdownOpen()"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+
+      <!-- Dropdown Menu -->
+      <div 
+        class="dropdown-menu"
+        [class.dropdown-menu--open]="isDropdownOpen()"
+        *ngIf="isDropdownOpen()">
+
+          <!-- Search -->
+         <div class="dropdown-search">
+         <input type="text" 
+                [(ngModel)]="searchTerm" 
+                (input)="onSearchChange()" 
+                placeholder="Search rooms..." 
+                class="dropdown-search" />
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <!-- Action Buttons -->
+        <div class="dropdown-actions">
+          <button 
+            (click)="selectAll()" 
+            [disabled]="allSelected()"
+            class="dropdown-action-btn dropdown-action-btn--primary">
+            <span class="text-sm">✓</span>
+            Select All
+          </button>
+          <button 
+            (click)="clearAll()" 
+            [disabled]="noneSelected()"
+            class="dropdown-action-btn dropdown-action-btn--secondary">
+            <span class="text-sm">✕</span>
+            Clear All
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="dropdown-divider"></div>
+
+        <!-- Room Options -->
+        <div class="dropdown-options">
+          <label 
+            *ngFor="let room of filteredRooms(); trackBy: trackByRoomId" 
+            class="dropdown-option"
+            [class.dropdown-option--selected]="isRoomSelected(room.id)">
+
+            <input
+              type="checkbox"
+              [value]="room.id"
+              [checked]="isRoomSelected(room.id)"
+              (change)="onRoomSelectionChange(room.id, $event)"
+              class="dropdown-checkbox">
+
+            <!-- Custom Checkbox -->
+            <div class="checkbox-custom">
+              <svg *ngIf="isRoomSelected(room.id)" 
+                   class="checkbox-icon" 
+                   fill="currentColor" 
+                   viewBox="0 0 20 20">
+                <path fill-rule="evenodd" 
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                      clip-rule="evenodd"/>
+              </svg>
+            </div>
+
+            <!-- Room Info -->
+            <div class="room-option-info">
+              <div class="room-option-header">
+                <h4 class="room-option-name">{{ room.name }}</h4>
+                <span [class]="getStatusClasses(room)">
+                  {{ getRoomStatus(room) }}
+                </span>
+              </div>
+
+              <div class="room-option-stats">
+                <span class="room-stat">{{ room.apiCalls | number }} calls</span>
+                <span class="room-stat">{{ room.quotaRemaining }}% quota left</span>
+                <span class="room-stat-last-login">{{ formatLastLogin(room.lastLogin) }}</span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay to close dropdown when clicking outside -->
+    <div 
+      *ngIf="isDropdownOpen()" 
+      class="dropdown-overlay"
+      (click)="closeDropdown()">
+    </div>
+  </div>
+
+  <!-- Filter Summary -->
+  <div class="filter-summary" *ngIf="getSelectedCount() > 0 && getSelectedCount() < rooms.length">
+    <div class="summary-content">
+      <div class="summary-icon">
+        <span class="text-sm">📊</span>
+      </div>
+      <div class="summary-text">
+        <span class="summary-primary">{{ getSelectedCount() }} of {{ rooms.length }} rooms selected</span>
+        <span class="summary-secondary">Dashboard showing filtered metrics</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Rooms Selected State -->
+  <div class="filter-summary filter-summary--all" *ngIf="getSelectedCount() === 0 || getSelectedCount() === rooms.length">
+    <div class="summary-content">
+      <div class="summary-icon">
+        <span class="text-sm">🏢</span>
+      </div>
+      <div class="summary-text">
+        <span class="summary-primary">All rooms selected</span>
+        <span class="summary-secondary">Dashboard showing complete metrics</span>
+      </div>
+    </div>
+  </div>
+</div>
